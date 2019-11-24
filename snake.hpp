@@ -27,9 +27,8 @@ public:
     bool occupies(int x, int y);
     bool occupies(coord xy);
     bool ishead(int x, int y);
-    coord move(), next_move(), head();
-    void redirect(direction direct);
-    void eat();
+    coord next_move(), head();
+    void move(), redirect(direction direct), eat();
 
 private:
     int growth;
@@ -83,24 +82,10 @@ coord Snake::next_move()
     }
     return xy;
 }
-coord Snake::move()
+
+void Snake::move()
 {
-    coord xy = coords.front();
-    switch (dir)
-    {
-    case North:
-        xy.x--;
-        break;
-    case East:
-        xy.y++;
-        break;
-    case South:
-        xy.x++;
-        break;
-    case West:
-        xy.y--;
-        break;
-    }
+    coord xy = next_move();
     coords.push_front(xy);
     if (growth > 0)
     {
@@ -110,8 +95,6 @@ coord Snake::move()
     {
         coords.pop_back();
     }
-
-    return xy;
 }
 
 void Snake::eat()
