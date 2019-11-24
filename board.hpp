@@ -41,7 +41,7 @@ private:
 };
 
 Board::Board(int speed)
-    : speed_time(std::chrono::milliseconds(speed)), paused(false), dead(false), food({0, 0})
+    : speed_time(std::chrono::milliseconds(speed)), paused(false), dead(false), food({0, 0}), score(0)
 {
     initscr();
     getmaxyx(stdscr, height, width);
@@ -54,6 +54,7 @@ Board::Board(int speed)
     nodelay(win, true);
     keypad(win, true);
     start_color();
+    std::cerr << "Logging\n";
 
     snake.begin(height / 2, width / 2);
 
@@ -174,11 +175,12 @@ void Board::run()
 
 void Board::gen_food()
 {
-    coord xy = {generator(rand_eng), generator(rand_eng)};
-    while (snake.occupies(xy.x, xy.y) || xy.x >= height || xy.y >= width)
+    coord xy;
+    do
     {
         xy = {generator(rand_eng), generator(rand_eng)};
-    }
+    } while (snake.occupies(xy.x, xy.y) || xy.x >= height || xy.y >= width);
+    
     coord snakehead = snake.head();
     int xx = abs(snakehead.x - xy.x) + abs(snakehead.y - xy.y);
     xx += xx / 2;
