@@ -24,7 +24,7 @@ The game board is initialized to the full width and height of the terminal windo
 
 There are a few hidden features in the game.
 
-# Building
+## Building
 This project requires `ncurses`<sup>1</sup>  and a c compiler to build.
 Building and running has only been tested on `Ubuntu 18` and `Arch`, but should work on any platform that can get `ncurses`.
 
