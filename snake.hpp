@@ -1,17 +1,17 @@
 #include <deque>
 #include <algorithm>
 
-struct coord
+struct Coord
 {
     int x, y;
 
-    bool operator==(const coord a)
+    bool operator==(const Coord a)
     {
         return a.x == x && a.y == y;
     }
 };
 
-enum direction
+enum Direction
 {
     North,
     West,
@@ -22,24 +22,29 @@ enum direction
 class Snake
 {
 public:
+    // Creates a new snake with no body
+    // facing North
     Snake();
+    // Adds a head to the Snake at Coord(x, y)
+    // and a next at Coord(x, y+1)
     void begin(int x, int y);
+    // Checks is any of the Snake parts is at
+    // Coord(x,y)
     bool occupies(int x, int y);
-    bool occupies(coord xy);
+    bool occupies(Coord xy);
     bool ishead(int x, int y);
-    coord next_move(), head();
-    void move(), redirect(direction direct), eat();
+    Coord next_move(), head();
+    void move(), redirect(Direction direct), eat();
 
 private:
     int growth;
-    direction dir;
-    std::deque<coord> coords;
+    Direction dir;
+    std::deque<Coord> coords;
 };
 
 Snake::Snake()
-    : dir(North)
+    : dir(North), growth(0)
 {
-    growth = 0;
 }
 
 void Snake::begin(int x, int y)
@@ -53,18 +58,18 @@ bool Snake::ishead(int x, int y)
     return coords.front().x == x && coords.front().y == y;
 }
 
-bool Snake::occupies(coord xy)
+bool Snake::occupies(Coord xy)
 {
     return std::find(coords.begin(), coords.end(), xy) != coords.end();
 }
 bool Snake::occupies(int x, int y)
 {
-    return std::find(coords.begin(), coords.end(), coord{x, y}) != coords.end();
+    return std::find(coords.begin(), coords.end(), Coord{x, y}) != coords.end();
 }
 
-coord Snake::next_move()
+Coord Snake::next_move()
 {
-    coord xy = coords.front();
+    Coord xy = coords.front();
     switch (dir)
     {
     case North:
@@ -85,7 +90,7 @@ coord Snake::next_move()
 
 void Snake::move()
 {
-    coord xy = next_move();
+    Coord xy = next_move();
     coords.push_front(xy);
     if (growth > 0)
     {
@@ -102,13 +107,15 @@ void Snake::eat()
     growth++;
 }
 
-void Snake::redirect(direction direct)
-{
+void Snake::redirect(Direction direct)
+{   
+    // Don't redirect to the opposite direction
+    // so the snake doesn't try to enter it's neck
     if (direct + dir != 3)
         dir = direct;
 }
 
-coord Snake::head()
+Coord Snake::head()
 {
     return coords.front();
 }

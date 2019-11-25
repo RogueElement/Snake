@@ -25,7 +25,7 @@ private:
     int height, width, score;
     bool paused, dead;
 
-    coord food;
+    Coord food;
     Snake snake;
     WINDOW *win;
 
@@ -54,7 +54,6 @@ Board::Board(int speed)
     nodelay(win, true);
     keypad(win, true);
     start_color();
-    std::cerr << "Logging\n";
 
     snake.begin(height / 2, width / 2);
 
@@ -95,7 +94,7 @@ void Board::update_screen()
             {
                 waddch(win, 'O' | COLOR_PAIR(SNAKECOLOR));
             }
-            else if (food == (coord{i, j}))
+            else if (food == (Coord{i, j}))
             {
                 waddch(win, 'A' | COLOR_PAIR(FOODCOLOR));
             }
@@ -175,13 +174,13 @@ void Board::run()
 
 void Board::gen_food()
 {
-    coord xy;
+    Coord xy;
     do
     {
         xy = {generator(rand_eng), generator(rand_eng)};
     } while (snake.occupies(xy.x, xy.y) || xy.x >= height || xy.y >= width);
     
-    coord snakehead = snake.head();
+    Coord snakehead = snake.head();
     int xx = abs(snakehead.x - xy.x) + abs(snakehead.y - xy.y);
     xx += xx / 2;
     std::uniform_int_distribution<int> gen(xx, xx * 2);

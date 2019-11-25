@@ -2,7 +2,7 @@
 
 int main(int argc, char **argv)
 {
-    Board board = Board(100);
+    Board board = Board(10);
 
     board.run();
 
