@@ -202,6 +202,15 @@ void Board::run()
                     paused = false;
                 }
                 break;
+            case 'r':
+                if (dead)
+                {
+                    snake = Snake();
+                    snake.begin(height / 2, width / 2);
+                    dead = false;
+                    score = 0;
+                    gen_food();
+                }
             }
         }
         if (paused || dead)

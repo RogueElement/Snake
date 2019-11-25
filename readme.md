@@ -19,6 +19,7 @@ Game controls:
 - The arrow keys change the snake's direction.
 - `P` pauses and unpauses the game.
 - `Q` will quit the game instantly.
+- `R` will reset the snake and game score if the snake is dead.
 
 The game board is initialized to the full width and height of the terminal window when it launches. Resizing the window will mess up the TUI but the game will continue as is;
 
