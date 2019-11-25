@@ -1,8 +1,8 @@
 #include "board.hpp"
 
-int main(int argc, char **argv)
+int main()
 {
-    Board board = Board(10);
+    Board board = Board();
 
     board.run();
 

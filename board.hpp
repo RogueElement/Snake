@@ -8,8 +8,6 @@
 
 #include "snake.hpp"
 
-#define BOARDSIZE 50
-
 #define WALLCOLOR 1
 #define FOODCOLOR 2
 #define SNAKECOLOR 3
@@ -17,13 +15,16 @@
 class Board
 {
 public:
-    Board(int speed);
+    // Makes a new board with 100 milliseconds between
+    // each snake move
+    Board();
+    // Starts the main game loop
     void run();
     ~Board();
 
 private:
-    int height, width, score;
-    bool paused, dead;
+    int height, width, score, multiplier;
+    bool paused, dead, immortal;
 
     Coord food;
     Snake snake;
@@ -36,26 +37,29 @@ private:
     std::mt19937 rand_eng;
 
     void update_screen();
+    // Generates a random Coord for food that is within the board and
+    // not occupied by the snake and sets food_time to a random
+    // amount of time between the time it would take the snake
+    // head to get to food (x1.5) and double that time (so between x1.5
+    // optimal time and x3 optimal time)
     void gen_food();
-    void game_over();
 };
 
-Board::Board(int speed)
-    : speed_time(std::chrono::milliseconds(speed)), paused(false), dead(false), food({0, 0}), score(0)
+Board::Board()
+    : speed_time(std::chrono::milliseconds(100)), paused(false), dead(false), immortal(false),
+      food({0, 0}), score(0), multiplier(1)
 {
-    initscr();
-    getmaxyx(stdscr, height, width);
-    // int min = height < width ? height : width;
-    // height = min;
-    // width = min;
+    initscr();                       // Initialize ncurses terminal window
+    getmaxyx(stdscr, height, width); // Get the height/width of the terminal window
     win = stdscr;
-    cbreak();
-    noecho();
-    nodelay(win, true);
-    keypad(win, true);
-    start_color();
+    cbreak();           // Disable line buffering
+    noecho();           // Don't echo key presses to the terminal
+    nodelay(win, true); // Enable non blocking input capture
+    keypad(win, true);  // Capture arrow keys as input
+    curs_set(0);        // Set the cursor to invisible
+    start_color();      // Enable colors
 
-    snake.begin(height / 2, width / 2);
+    snake.begin(height / 2, width / 2); // Start the snake in the middle of the screen
 
     init_pair(WALLCOLOR, COLOR_RED, COLOR_RED);
     init_pair(FOODCOLOR, COLOR_GREEN, COLOR_MAGENTA);
@@ -72,7 +76,7 @@ Board::Board(int speed)
 
 Board::~Board()
 {
-    endwin();
+    endwin(); // Restore terminal settings
 }
 
 void Board::update_screen()
@@ -103,7 +107,6 @@ void Board::update_screen()
                 waddch(win, ' ');
             }
         }
-        //wmove(win, i, 0);
     }
     wmove(win, 0, 0);
     waddstr(win, " Score ");
@@ -134,6 +137,70 @@ void Board::run()
                 break;
             case 'p':
                 paused = !paused;
+                if (paused)
+                {
+                    wmove(win, (height / 2), (width / 2) - 5);
+                    waddstr(win, "PAUSED");
+                    wrefresh(win);
+                }
+                break;
+            case 'c':
+                if (paused)
+                {
+                    wmove(win, height - 1, 0);
+                    waddstr(win, "Cheat code: ");
+                    wrefresh(win);
+                    nocbreak();
+                    echo();
+                    curs_set(1);
+                    nodelay(win, false);
+                    char cstr[20];
+                    getstr(cstr);
+                    std::string str = cstr;
+                    auto twentymills = std::chrono::milliseconds(20);
+                    if (str == "faster")
+                    {
+                        if (speed_time > twentymills)
+                        {
+                            speed_time -= twentymills;
+                        }
+                    }
+                    else if (str == "slower")
+                    {
+                        speed_time += twentymills;
+                    }
+                    else if (str == "speeddemon")
+                    {
+                        speed_time = std::chrono::milliseconds(5);
+                    }
+                    else if (str == "slowpoke")
+                    {
+                        speed_time = std::chrono::milliseconds(500);
+                    }
+                    else if (str == "greedy")
+                    {
+                        multiplier++;
+                    }
+                    else if (str == "greedier")
+                    {
+                        multiplier += 10;
+                    }
+                    else if (str == "immortal")
+                    {
+                        immortal = !immortal;
+                    }
+                    else if (str == "saint")
+                    {
+                        immortal = false;
+                        speed_time = std::chrono::milliseconds(100);
+                        multiplier = 1;
+                    }
+                    curs_set(0);
+                    nodelay(win, true);
+                    cbreak();
+                    noecho();
+                    paused = false;
+                }
                 break;
             }
         }
@@ -148,15 +215,20 @@ void Board::run()
             last_moved = now;
             if (next_move.x == 0 || next_move.y == 0 || next_move.x == height - 1 || next_move.y == width - 1 || snake.occupies(next_move))
             {
-                game_over();
+                if (immortal)
+                    continue;
+                dead = true;
+                wmove(win, (height / 2), (width / 2) - 5);
+                waddstr(win, "GAME OVER");
+                wrefresh(win);
                 continue;
             }
             bool eat = next_move == food;
             snake.move();
             if (eat)
             {
-                snake.eat();
-                score++;
+                snake.eat(multiplier);
+                score += multiplier;
                 gen_food();
             }
         }
@@ -168,7 +240,6 @@ void Board::run()
         }
 
         update_screen();
-        //std::this_thread::sleep_for(std::chrono::milliseconds(500));
     }
 }
 
@@ -179,7 +250,7 @@ void Board::gen_food()
     {
         xy = {generator(rand_eng), generator(rand_eng)};
     } while (snake.occupies(xy.x, xy.y) || xy.x >= height || xy.y >= width);
-    
+
     Coord snakehead = snake.head();
     int xx = abs(snakehead.x - xy.x) + abs(snakehead.y - xy.y);
     xx += xx / 2;
@@ -187,12 +258,4 @@ void Board::gen_food()
     food_time = speed_time * gen(rand_eng);
     food_created = std::chrono::system_clock::now();
     food = xy;
-}
-
-void Board::game_over()
-{
-    dead = true;
-    wmove(win, (height / 2), (width / 2) - 5);
-    waddstr(win, "GAME OVER");
-    wrefresh(win);
 }
