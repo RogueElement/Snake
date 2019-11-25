@@ -31,8 +31,7 @@ public:
     // Checks if any of the Snake parts is at
     // Coord(x,y)
     bool occupies(int x, int y);
-    // Checks ifs any of the Snake parts is at
-    // xy
+    // Checks if any of the Snake parts is at xy
     bool occupies(Coord xy);
     // Checks if Coord(x, y) is occupied by the snake head
     bool ishead(int x, int y);
@@ -41,7 +40,11 @@ public:
     Coord next_move();
     // Returns the position of the snake head
     Coord head();
-    void move(), redirect(Direction direct);
+    // Move adds a Coord to the snake head then deletes a Coord from it's tail
+    // if the snake is "growing" it doesn't delete tails until it stops "growing"
+    void move();
+    // Changes the direction of the snake
+    void redirect(Direction direct);
     // Extend the snake lenght by pausing tail deletion while
     // moving for x moves
     void eat(int x);
