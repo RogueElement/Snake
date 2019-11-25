@@ -9,7 +9,7 @@ Rules of the game:
 - The snake moves only north, south, east, or west.
 - Food (represented with `A`) appear at random locations, and persist for a random amount of time.
 - There is always exactly one food visible at any given time.
-- When the snake eats an apple, it gets longer and the game score goes up.
+- When the snake eats a food item, it gets longer and the game score goes up.
 - The game continues until the snake dies.
 - Death occurs either by the snake head:
     - running into a wall (boundary of the screen).
